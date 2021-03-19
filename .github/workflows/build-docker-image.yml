@@ -1,6 +1,9 @@
 name: build-docker-image
 
-on: release
+on:
+  push:
+    tags:
+      - v*
 
 jobs:
   build-docker-image:
@@ -15,7 +18,7 @@ jobs:
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
 
       - name: Build
-        run: make release VERSION=${ steps.get_version.outputs.VERSION }
+        run: make release VERSION=${{ steps.get_version.outputs.VERSION }}
       
       - name: Create Release
         uses: actions/create-release@v1
