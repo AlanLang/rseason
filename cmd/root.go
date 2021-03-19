@@ -27,7 +27,13 @@ var rootCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		seasonName, _ := cmd.Flags().GetString("name")
-		rname(seasonName)
+		episodes, _ := cmd.Flags().GetString("episodes")
+		iepisodes, err := strconv.Atoi(episodes)
+		if err != nil {
+			fmt.Println("episodes只能是数字")
+			return
+		}
+		rname(seasonName, iepisodes)
 	},
 }
 
@@ -40,17 +46,18 @@ func Execute() {
 
 func init() {
 	rootCmd.Flags().StringP("name", "n", "1", "the season name you wan't to set")
+	rootCmd.Flags().StringP("episodes", "e", "1", "the episodes name you wan't to start")
 	viper.BindPFlag("author", rootCmd.PersistentFlags().Lookup("author"))
 }
 
-func rname(seasonName string) {
+func rname(seasonName string, episodes int) {
 	path, _ := os.Getwd()
 	files, _ := ioutil.ReadDir(path)
 	for index, f := range files {
 		if f.Name() != ".DS_Store" && f.Name() != "@eaDir" {
 			fst := strings.Split(f.Name(), ".")
 			fileType := fst[len(fst)-1]
-			newName := getSeasonName(seasonName) + getEpisodesName(index+1) + "." + fileType
+			newName := getSeasonName(seasonName) + getEpisodesName(index+episodes) + "." + fileType
 			err := os.Rename(path+"/"+f.Name(), path+"/"+newName)
 			if err != nil {
 				fmt.Println(err.Error())
