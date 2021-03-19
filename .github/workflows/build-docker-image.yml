@@ -1,0 +1,38 @@
+name: build-docker-image
+
+on: release
+
+jobs:
+  build-docker-image:
+    name: Build and upload docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull source
+        uses: actions/checkout@v1
+
+      - name: Get version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+      - name: Build
+        run: make release VERSION=${ steps.get_version.outputs.VERSION }
+      
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          release_name: ${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+
+      - name: Upload to release
+        uses: JasonEtco/upload-to-release@master
+        with:
+          args:
+            - rseason-arm64-${{ steps.get_version.outputs.VERSION }}.tar.gz
+            - rseason-linux64-${{ steps.get_version.outputs.VERSION }}.tar.gz
+            - rseason-mac64-${{ steps.get_version.outputs.VERSION }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
